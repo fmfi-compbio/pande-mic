@@ -1,0 +1,68 @@
+import os, shutil
+from python.merge_sum import merge, replace_merged_file, create_merge_file_copy
+import time
+
+configfile: config["config_dir"]+"config.yaml"
+
+BATCHES = [filename for filename in os.listdir(config["batch_path"]) if filename[0]!="."] #vsetky batche vo foldri
+
+if config["barcodes"]>=10:
+    SAMPLES = ["barcode0"+str(i) for i in range(1,10)]+["barcode"+str(i) for i in range(10,config["barcodes"]+1)]+["unclassified"] #sample pre kazdy barkod
+elif config["barcodes"]<10 and config["barcodes"]>0:
+    SAMPLES = ["barcode0"+str(i) for i in range(1,int(config["barcodes"]))]+["unclassified"]
+else:
+    SAMPLES = ["unclassified"]
+
+batch_done_path = os.path.join(config["output_dir"],"batches_done")
+if not os.path.exists(batch_done_path): #weird bug sloution - directory (sometimes!) deleted if empty at the end of pipeline run
+    os.mkdir(batch_done_path)
+DONE_NOT_SUMMARIZED = [batch_done.split(".")[0] for batch_done in os.listdir(batch_done_path) if ( batch_done[0]!="." and  batch_done.split(".")[1] == "done") ]
+print("batches", BATCHES)
+print("samples", SAMPLES)
+print("done, not summarized:", DONE_NOT_SUMMARIZED)
+if DONE_NOT_SUMMARIZED == []: #first run, summary sa vyrobi az v dalsom
+    VARIANT_SAMPLES = []
+else:
+    VARIANT_SAMPLES = SAMPLES
+
+#store_batches = config["store_batches"]
+
+rule all:
+    input:
+        batch_summary = expand(os.path.join(config["output_dir"],"batches_done")+"/{batch}.summarized", batch=DONE_NOT_SUMMARIZED),
+        SNPs = expand(config["output_dir"]+"{batch}/SNPs/{sample}.csv", sample=SAMPLES, batch=BATCHES),
+        #variants = expand(config["output_dir"]+"summary/variants/{sample}.json", sample=SAMPLES) #problem pri prvom spusteni - este neexistuje sumar
+        variants = expand(config["output_dir"]+"summary/variants/{sample}.json", sample=VARIANT_SAMPLES) # empty list pri prvom spusteni
+    run:
+        for batch in DONE_NOT_SUMMARIZED:
+            print("end of pipeline - batch "+batch+", path exists?", os.path.exists(os.path.join(config["output_dir"],"batches_done")))
+            os.unlink(os.path.join(os.path.join(config["output_dir"],"batches_done"),batch+".done"))
+            os.unlink(os.path.join(os.path.join(config["output_dir"],"batches_done"),batch+".summarized"))
+            print("removed", os.path.join(os.path.join(config["output_dir"],"batches_done"),batch+".done"))
+            print("removed", os.path.join(os.path.join(config["output_dir"],"batches_done"),batch+".summarized"))
+            #if not store_batches:
+            shutil.rmtree(os.path.join(config["output_dir"],batch)) #remove summarized batch
+            print("removed", os.path.join(config["output_dir"],batch))
+            #print("end of pipeline - batch "+batch+", after removes - path exists?", os.path.exists(os.path.join(config["output_dir"],"batches_done")))
+            #os.system("cp -r "+os.path.join(config["output_dir"],"batches_done")+" "+os.path.join(config["output_dir"],batch+"_batches_done"))
+        for batch in BATCHES:
+            file_path = os.path.join(os.path.join(config["output_dir"],"batches_done"), batch+".done")
+            if not os.path.exists(file_path): #create batch.done file
+                with open(file_path, 'w') as fp:
+                    pass
+
+include: "rules/batches/basecalling.smk" #fast5_dir = config["batch_patch"]+"{batch}" -> fastq = config["output_dir"]+"{batch}/basecalled/{batch}.fastq"
+include: "rules/batches/debarcoding.smk" #fastq = config["output_dir"]+"{batch}/basecalled/{batch}.fastq" -> out = directory(config["output_dir"]+"{batch}/debarcoded/{batch}")
+include: "rules/batches/debarcoding_summary.smk" #debarcoding_out = config["output_dir"]+"{batch}/debarcoded/{batch}" -> barcode_summary = directory(config["output_dir"]+"{batch}/barcode_summary)"
+include: "rules/batches/alignment.smk" #fastq = config["output_dir"]+"{batch}/batch_summary/{sample}.fastq" -> bam = config["output_dir"]+"{batch}/aligned/{sample}.bam",
+include: "rules/batches/count_bases_in_alignment.smk" #bam = config["output_dir"]+"{batch}/aligned/{sample}.bam" -> observed_counts = config["output_dir"]+"{batch}/coverage_per_base/{sample}.csv"
+include: "rules/batches/find_SNPs.smk" #observed_counts = config["output_dir"]+"{batch}/"+"coverage_per_base/{sample}.csv" -> SNPs = config["output_dir"]+"{batch}/"+"SNPs/{sample}.csv"
+
+include: "rules/summary/summarize_batch.smk" #input: outputs of all summarization rules below
+include: "rules/summary/summarize_coverage_per_base.smk"
+include: "rules/summary/summarize_basecalled.smk"
+include: "rules/summary/summarize_barcode_summary.smk"
+include: "rules/summary/summarize_aligned.smk"
+include: "rules/summary/summarize_SNPs.smk"
+
+include: "rules/from_summary/variant_calling.smk"
