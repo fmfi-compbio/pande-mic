@@ -1,0 +1,63 @@
+##############################
+# general pipeline settings
+##############################
+
+
+#path to scripts directory (pipeline root dir)
+scripts_dir: /<anywhere>/pande-mic/
+
+#where to store pipeline output
+output_dir: /<anywhere>/
+
+# # of barcodes
+barcodes: 96
+
+# minimal number of new batches needed to run the pipeline
+min_batches: 1
+# maximal number of batches to be processed at one time
+max_batches: 4
+# number of files in a batch
+batch_size: 10
+
+#maximal number of cores provided for the snakemake pipeline, NOTE: recomm.: max_batches =< cores
+cores: 4
+
+clear_annotated: True
+
+##########################################
+# settings for rules and specific scripts
+##########################################
+
+#basecalling
+input_path: /<anywhere>/fast5/
+
+#where to store temporary directories with linked files (batches to be processed)
+batch_path: /<anywhere>/batches/
+
+#deepnano blitz params
+deepnanoblitz_path: /<anywhere>/deepnano-blitz/scripts/
+blitz_beam_size: 5
+blitz_threads: 1
+blitz_network_type: 48
+
+#debarcoding
+guppy_setup_path: /<anywhere>/setup-guppy
+#guppy_arrangements_files: barcode_arrs_nb96.cfg # old version
+guppy_config: configuration.cfg
+guppy_barcode_kits: EXP-NBD196
+guppy_threads: 1
+
+#alignment
+reference_genome: /<anywhere>/ref.fasta
+
+#base counting script
+alignment_low_cutoff: 50 
+
+#find SNPs
+coverage_threshold: 50
+coverage_fraction: 0.5
+
+#variant calling
+mut_file: /<anywhere>/mut_tree.txt
+variant_calling_threshold: 50
+

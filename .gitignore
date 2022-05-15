@@ -3,5 +3,4 @@ __pycache__
 test_log*/*
 *test*/
 .vscode
-configs/
 *run*

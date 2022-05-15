@@ -1,0 +1,9 @@
+summary_subdirs:
+  - basecalled
+  - debarcoded
+  - aligned
+  - variants
+  - coverage_per_base 
+  - SNPs
+  - barcode_summary
+          
