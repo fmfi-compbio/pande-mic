@@ -1,0 +1,1 @@
+/fsys1/nobackup/monitoring/out_96_test/batches/batch1, 10.983462545

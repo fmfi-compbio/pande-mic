@@ -1,0 +1,1 @@
+/fsys1/nobackup/monitoring/out_96_test/batch3/basecalled/batch3.fastq, 1.842118321

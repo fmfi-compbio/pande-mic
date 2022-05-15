@@ -1,0 +1,7 @@
+export GUPPYDIR=/fsys1/nobackup/monitoring/ont-guppy-cpu
+
+export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}   #https://stackoverflow.com/questions/9631228/how-to-smart-append-ld-library-path-in-shell-when-nounset
+
+#export LD_LIBRARY_PATH=$GUPPYDIR/lib:$LD_LIBRARY_PATH
+
+export PATH=$GUPPYDIR/bin:$PATH

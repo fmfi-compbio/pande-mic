@@ -1,0 +1,2 @@
+/fsys1/nobackup/monitoring/out_96_test/batch0/aligned/mapped.csv /fsys1/nobackup/monitoring/out_96_test/batch1/aligned/mapped.csv,0.006880283355712891
+/fsys1/nobackup/monitoring/out_96_test/batch3/aligned/mapped.csv /fsys1/nobackup/monitoring/out_96_test/batch2/aligned/mapped.csv,0.006666660308837891

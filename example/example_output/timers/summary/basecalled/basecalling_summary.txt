@@ -1,0 +1,2 @@
+/fsys1/nobackup/monitoring/out_96_test/batch0/basecalled/count.csv /fsys1/nobackup/monitoring/out_96_test/batch1/basecalled/count.csv,0.0067937374114990234
+/fsys1/nobackup/monitoring/out_96_test/batch3/basecalled/count.csv /fsys1/nobackup/monitoring/out_96_test/batch2/basecalled/count.csv,0.007247209548950195
