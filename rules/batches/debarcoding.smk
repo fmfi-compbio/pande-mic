@@ -9,7 +9,7 @@ rule debarcoding:
         out_dir = config["output_dir"]+"{batch}/debarcoded/{batch}",
         counting_file = config["output_dir"]+"{batch}/debarcoded/count.csv",
         time_dir = config["output_dir"]+"timers/debarcoded/{batch}_debarcoding.txt",
-        guppy_setup_path = config["guppy_setup_path"],
+        #guppy_setup_path = config["guppy_setup_path"],
         scripts_dir = config["scripts_dir"],
         guppy_config = config["guppy_config"],
         barcode_kits = config["guppy_barcode_kits"]
@@ -26,7 +26,7 @@ rule debarcoding:
         START=$(date +%s.%N)
         mkdir {params.fastq_tmp_dir}
         ln -s {input.fastq} {params.fastq_tmp}
-        source {params.guppy_setup_path}; guppy_barcoder --require_barcodes_both_ends \
+        guppy_barcoder --require_barcodes_both_ends \
                 -i {params.fastq_tmp_dir} -s {params.out_dir} --worker_threads {threads} \
                 --config "{params.guppy_config}" \
                 --barcode_kits "{params.barcode_kits}" > {log.debarcoding_log} 2> {log.debarcoding_err}

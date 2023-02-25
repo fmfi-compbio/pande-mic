@@ -42,6 +42,7 @@ class PipelineRunner:
             self.variant_calling_threshold = yaml_args["variant_calling_threshold"]
             self.blitz_threads = yaml_args["blitz_threads"]
             self.guppy_threads = yaml_args["guppy_threads"]
+            self.guppy_path = yaml_args["guppy_path"]
             self.config_dir_copy = None
             self.yaml_args = yaml_args
             self.test = Test(self)
@@ -70,9 +71,29 @@ class PipelineRunner:
 
             self.print_init_values()
             self.create_dirs()
+            
+            if not self.guppy_setup():
+                print("cannot set up guppy, interrupting")
+                self.interrupt_cleanup()
+                try:
+                    sys.exit(0)
+                except SystemExit:
+                    os._exit(0)
 
         except KeyboardInterrupt:
             self.stop()
+            
+    def guppy_setup(self):
+        print("export GUPPYDIR="+self.guppy_path)
+        res = os.system("export GUPPYDIR="+self.guppy_path)
+        if res == 0:
+            print("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
+            res2 = os.system("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
+            if res2 == 0:
+                res3 = os.system("export PATH=$GUPPYDIR/bin:$PATH")
+                print("export PATH=$GUPPYDIR/bin:$PATH")
+                return res3 == 0
+        return False
 
     def create_config_copy(self):
         """

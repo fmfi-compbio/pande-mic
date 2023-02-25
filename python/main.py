@@ -213,26 +213,29 @@ def check_config(yaml_args):
     else:
         print("deepnano-blitz scripts directory path not set")
         deepnanoblitz_path_input = input("Please enter a path to the deepnano-blitz scripts directory:\n")
-        if not os.path.exists(mut_path_input):
+        if not os.path.exists(deepnanoblitz_path_input):
             print("sorry, the path is not valid, interrupting")
             return False, missing_args
         else: 
             missing_args["deepnanoblitz_path"] = deepnanoblitz_path_input
             
     ###### guppy debarcoder #####    
-    if "guppy_setup_path" in yaml_args:
-        if not os.path.exists(yaml_args["guppy_setup_path"]):
-            guppy_setup = input("guppy setup path "+yaml_args["guppy_setup_path"]+" is not valid. This should be a path to a shell script with configuration needed to run guppy debarcoder on your machine. [If no configuration is needed to run 'guppy barcoder <..params..>', please provide a path to an empty .sh script.]: \n")
+    if "guppy_path" in yaml_args:
+        if not os.path.exists(yaml_args["guppy_path"]):
+            guppy_setup = input("guppy path "+yaml_args["guppy_path"]+" is not valid. Please enter the path to guppy (something like /<where is guppy>/ont-guppy-cpu): \n")
             if not os.path.exists(guppy_setup):
                 print("sorry, the path does not exist, interrupting")
                 return False, missing_args
-                if not os.access(guppy_setup, os.X_OK):
-                    print("sorry, the path is not executable (to fix it, try running chmod +x on the file), interrupring")
             else:
-                missing_args["guppy_setup_path"] = guppy_setup
-        elif not os.access(yaml_args["guppy_setup_path"], os.X_OK):
-            print("sorry, the guppy setup path "+yaml_args["guppy_setup_path"]+" is not executable, interrupting (to fix the issue, try running chmod +x on the file)")
-            return False, missing_args        
+                missing_args["guppy_path"] = guppy_setup
+    else:
+        print("guppy path not set")
+        guppy_setup = input("Please enter a path to guppy directory:\n")
+        if not os.path.exists(guppy_setup):
+            print("sorry, the path is not valid, interrupting")
+            return False, missing_args
+        else: 
+            missing_args["guppy_path"] = guppy_setup        
             
     #### everything ok #####    
     return True, missing_args
