@@ -7,7 +7,7 @@ IMPORTANT! - you have to use absolute paths
 then activate the conda environment and run
 
 ```
-python -u ../python/main.py --config_dir <absoulte path to this directory>/example_config/
+python -u ../python/main.py --config_dir $PWD/example_config/
 ```
 from this directory
 

@@ -13,7 +13,8 @@ class PipelineRunner:
     The purpose of this class is to create the batches and run snakemake in a loop.
     """
 
-    def __init__(self, config_dir, output_path, input_path, scripts_dir, num_of_barcodes, batch_min, batch_max, batch_size, variant_calling_threshold, batch_folder, reference, mutations, clear_annotated, cores, blitz_threads, guppy_threads):
+    def __init__(self, config_dir, yaml_args):
+    
         """
         set params, [clear annotated], print init. values, create summary dir and subdirs and empty .csv files
         """
@@ -22,32 +23,34 @@ class PipelineRunner:
 
             self.state = InitState(self)
             self.should_stop = False
-            self.output_path = output_path
-            self.input_path = input_path
-            self.scripts_dir = scripts_dir
+            self.output_path = yaml_args["output_dir"]
+            self.input_path = yaml_args["input_path"]
+            self.scripts_dir = yaml_args["scripts_dir"]
             self.config_dir = config_dir
-            self.num_of_barcodes = num_of_barcodes
-            self.batch_min = batch_min
-            self.batch_max = batch_max
-            self.batch_size = batch_size
+            self.num_of_barcodes = yaml_args["barcodes"]
+            self.batch_min = yaml_args["min_batches"]
+            self.batch_max = yaml_args["max_batches"]
+            self.batch_size = yaml_args["batch_size"]
             self.batches = 0
             self.fast5_batched = [] 
             self.not_summarized = []
             self.summarized = []
-            self.reference = reference
-            self.mutations = mutations
+            self.reference = yaml_args["reference_genome"]
+            self.mutations = yaml_args["mut_file"]
             self.iterations = 1
-            self.cores = cores
-            self.variant_calling_threshold = variant_calling_threshold
-            self.blitz_threads = blitz_threads
-            self.guppy_threads = guppy_threads
+            self.cores = yaml_args["cores"]
+            self.variant_calling_threshold = yaml_args["variant_calling_threshold"]
+            self.blitz_threads = yaml_args["blitz_threads"]
+            self.guppy_threads = yaml_args["guppy_threads"]
+            self.config_dir_copy = None
+            self.yaml_args = yaml_args
             self.test = Test(self)
 
-            if not os.path.exists(output_path):
-                os.mkdir(output_path)
+            if not os.path.exists(self.output_path):
+                os.mkdir(self.output_path)
                 print(str(datetime.now())+":::"+"created output dir (did not exist)")
 
-            if clear_annotated:
+            if yaml_args["clear_annotated"]:
                 print(str(datetime.now())+":::"+"clear annotated flag set - clearing annotated files")
                 self.clean_outdir()
             else:
@@ -55,15 +58,15 @@ class PipelineRunner:
 
             self.create_config_copy()
 
-            if batch_folder==None:
+            if yaml_args["batch_path"]==None:
                 print(str(datetime.now())+":::"+"batch folder is None")
-                batch_folder = os.path.join(output_path, "batch/")
+                yaml_args["batch_path"] = os.path.join(self.output_path, "batch/")
 
-            self.batch_folder = batch_folder
+            self.batch_folder = yaml_args["batch_path"]
 
-            if not os.path.exists(batch_folder):
-                os.mkdir(batch_folder)
-                print(str(datetime.now())+":::"+"created batch folder "+batch_folder)
+            if not os.path.exists(self.batch_folder):
+                os.mkdir(self.batch_folder)
+                print(str(datetime.now())+":::"+"created batch folder "+self.batch_folder)
 
             self.print_init_values()
             self.create_dirs()
@@ -79,6 +82,11 @@ class PipelineRunner:
             src = self.config_dir
             dst = os.path.join(self.output_path,"config/")
             shutil.copytree(src, dst)
+            os.rename(dst+"config.yaml", dst+"config_original.yaml")
+            config_yaml = dst+"config.yaml"
+            with open(config_yaml, 'w') as config_file:
+                yaml.dump(self.yaml_args, config_file)
+            self.config_dir_copy = dst
             print(str(datetime.now())+":::"+"created copy of config dir in output dir")
 
 
@@ -291,7 +299,7 @@ class PipelineRunner:
         out = os.path.join(self.output_path, "log/snake")
         t=time.time()
         #dag_command = "snakemake --rulegraph --snakefile "+pipeline_path+" --directory "+out+" --cores "+str(self.cores)+" --config scripts_dir="+self.scripts_dir+" config_dir="+self.config_dir+" > gvfile.txt"
-        pipeline_run_command = "snakemake --snakefile "+pipeline_path+" --directory "+out+" --cores "+str(self.cores)+" --rerun-incomplete --config scripts_dir="+self.scripts_dir+" config_dir="+self.config_dir+" >> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".out"+" 2>> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".err"
+        pipeline_run_command = "snakemake --snakefile "+pipeline_path+" --directory "+out+" --cores "+str(self.cores)+" --rerun-incomplete --config scripts_dir="+self.scripts_dir+" config_dir="+self.config_dir_copy+" >> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".out"+" 2>> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".err"
         print(str(datetime.now())+":::"+"starting pipeline, command: "+pipeline_run_command)
         #os.system(dag_command)
         res = os.system(pipeline_run_command)
@@ -327,7 +335,7 @@ class PipelineRunner:
         1. create n batches (min<n<max) by linking files from a specified directory
         2. run snakemake on new n batches and merge processed batches into the summary, find variants
         3. remove links
-        4. write processed batches and file int the log file
+        4. write processed batches and files into the log file
         """
         try:
             while True:
