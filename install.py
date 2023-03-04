@@ -11,27 +11,34 @@ if install_conda == 'y':
     print("RUNNING: wget https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-Linux-x86_64.sh && chmod +x ./Miniconda3-py310_23.1.0-1-Linux-x86_64.sh && ./Miniconda3-py310_23.1.0-1-Linux-x86_64.sh")
     os.system("wget https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-Linux-x86_64.sh && chmod +x ./Miniconda3-py310_23.1.0-1-Linux-x86_64.sh && ./Miniconda3-py310_23.1.0-1-Linux-x86_64.sh")
     print("----- conda config ----- ")
-    print("running bash inictialization script to make new installation available in the current shell")
-    print("RUNNING: source ~/.bashrc")
-    os.system("source ~/.bashrc")
-    print("initialize conda not to auto-activate base environment")
-    print("RUNNING: conda config --set auto_activate_base false")
-    os.system("conda config --set auto_activate_base false")
-    print("---- test conda ----")
-    print("the conda version check should now print something like 'conda 23.1.0' ")
-    print("RUNNING: conda --version")
-    os.system("conda --version")
+    print("running bash inictialization script to make new installation available in the current shell - you will probably need to re-run the script, skipping the conda install steps")
+    #print("RUNNING: source ~/.bashrc")
+    #os.system("~/.bashrc")
+    print("RUNNING: exec bash")
+    os.system("exec bash")
 else:
     print("assuming that conda is already installed on the sytem, skipping conda install")
 
 print ("------------------------------ end of conda install --------------------------------------------")
 
+print("-------------- conda config and test - after installation --------------")
+print("initialize conda not to auto-activate base environment")
+print("RUNNING: conda config --set auto_activate_base false")
+os.system("conda config --set auto_activate_base false")
+print("---- test conda ----")
+print("the conda version check should now print something like 'conda 23.1.0' ")
+print("RUNNING: conda --version")
+os.system("conda --version")
+print("-------------- end of conda config and test -------------------")
+
+
+
 print("--------------------------- conda environment -------------------------------")
 print("Now we will create the conda environment. Please proceed only if the conda install step was sucessfull or conda was already installed on the system")
-conda_sucess = input("proceed?[y/n]")
+conda_success = input("proceed?[y/n]")
 if conda_success == 'n':
     exit(1)
-else if conda_success == 'y':
+elif conda_success == 'y':
     print("some libraries require gcc in the installation process, so we have to chcek it is installled - again, it should print the vesrion, not something like 'gcc: command not found':")
     print("RUNNING: gcc --version")
     os.system("gcc --version")
@@ -39,9 +46,10 @@ else if conda_success == 'y':
     if gcc_install == 'y':
         print("installing gcc, root password may be required")
         print("RUNNING: sudo apt install gcc")
+        os.system("sudo apt install gcc")
         print("checking gcc install, RUNNING: gcc --version")
         os.system("gcc --version")
-        gcc_success == input("proceed (conda environment will be created)? [y/n]")
+        gcc_success = input("proceed (conda environment will be created)? [y/n]")
         if gcc_success == 'n':
             exit(1)
     else:
