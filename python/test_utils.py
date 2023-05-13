@@ -23,6 +23,7 @@ class Test:
         print("cpu times:", file=out)
         times_dict = self.sum_cpu_times()
         total_cpu_time = 0
+        multiplier = ""
         for key in times_dict:
             if key == "debarcoded":
                 multiplier = "x"+str(self.pipelinerunner.guppy_threads)
@@ -31,7 +32,6 @@ class Test:
             elif "benchmark" in key:
                 total_cpu_time+=times_dict[key]["cpu_time"]
             else:
-                multiplier = ""
                 total_cpu_time+=times_dict[key]
             print(key+":", times_dict[key], multiplier, file = out)
         print("------------", file=out)
@@ -54,15 +54,15 @@ class Test:
     def sum_cpu_times(self):
         times_dict = {}
         dirs = os.listdir(os.path.join(self.pipelinerunner.output_path,"timers/"))
-        for dir in dirs:
-            if dir[0]!='.' and dir!="summary" and not ("benchmark" in dir):
-                times_dict[dir]=self.sum_times_in_dir(os.path.join(self.pipelinerunner.output_path,"timers/")+dir)
-            if "benchmark" in dir:
-                times_dict[dir]=self.sum_snakemeke_benchmark_times_dir(os.path.join(self.pipelinerunner.output_path,"timers/")+dir)   
+        for directory in dirs:
+            if directory[0]!='.' and directory!="summary" and not ("benchmark" in directory):
+                times_dict[directory]=self.sum_times_in_dir(os.path.join(self.pipelinerunner.output_path,"timers/")+directory)
+            if "benchmark" in directory:
+                times_dict[directory]=self.sum_snakemeke_benchmark_times_dir(os.path.join(self.pipelinerunner.output_path,"timers/")+directory)   
         dirs = os.listdir(os.path.join(self.pipelinerunner.output_path,"timers/summary/"))
-        for dir in dirs:
-            if dir[0]!='.':
-                times_dict[dir+"_summary"]=self.sum_times_in_dir(os.path.join(self.pipelinerunner.output_path,"timers/summary/")+dir) 
+        for directory in dirs:
+            if directory[0]!='.':
+                times_dict[directory+"_summary"]=self.sum_times_in_dir(os.path.join(self.pipelinerunner.output_path,"timers/summary/")+directory) 
         return times_dict
     
     def sum_times_in_dir(self,dir):

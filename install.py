@@ -22,9 +22,10 @@ else:
 print ("------------------------------ end of conda install --------------------------------------------")
 
 print("-------------- conda config and test - after installation --------------")
-print("initialize conda not to auto-activate base environment")
-print("RUNNING: conda config --set auto_activate_base false")
-os.system("conda config --set auto_activate_base false")
+autoactivate = input("initialize conda not to auto-activate base environment? [y/n]")
+if autoactivate == 'y':
+    print("RUNNING: conda config --set auto_activate_base false")
+    os.system("conda config --set auto_activate_base false")
 print("---- test conda ----")
 print("the conda version check should now print something like 'conda 23.1.0' ")
 print("RUNNING: conda --version")
@@ -40,7 +41,7 @@ if conda_success == 'n':
     exit(1)
 elif conda_success == 'y':
     print("some libraries require gcc in the installation process, so we have to chcek it is installled - again, it should print the vesrion, not something like 'gcc: command not found':")
-    print("RUNNING: gcc --version")
+    print("RUNNING: gcc --version , check the output whether it is already installed on your system")
     os.system("gcc --version")
     gcc_install = input("install gcc? [y/n]")
     if gcc_install == 'y':
@@ -80,6 +81,6 @@ elif conda_success == 'y':
 print("------------------------ end of conda environment setup ---------------------")
 
 #print("please run the following command MANUALLY: \n \t conda init --all \n ")
-print("Please CLOSE AND REOPEN the current shell and run \n \t conda activate monitoring-env")
-print("you may also want to run \n \t python3 env_check.py \n to make sure the environment is set up properly")
+print("Please CLOSE AND REOPEN the current shell and run \n \t conda activate monitoring_env")
+#print("you may also want to run \n \t python3 env_check.py \n to make sure the environment is set up properly")
 

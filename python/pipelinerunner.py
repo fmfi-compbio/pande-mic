@@ -73,7 +73,7 @@ class PipelineRunner:
             self.create_dirs()
             
             if not self.guppy_setup():
-                print("cannot set up guppy, interrupting")
+                print("cannot create guppy setup, interrupting")
                 self.interrupt_cleanup()
                 try:
                     sys.exit(0)
@@ -82,19 +82,14 @@ class PipelineRunner:
 
         except KeyboardInterrupt:
             self.stop()
-            
-    def guppy_setup(self):
-        print("export GUPPYDIR="+self.guppy_path)
-        res = os.system("export GUPPYDIR="+self.guppy_path)
-        if res == 0:
-            print("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
-            res2 = os.system("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
-            if res2 == 0:
-                res3 = os.system("export PATH=$GUPPYDIR/bin:$PATH")
-                print("export PATH=$GUPPYDIR/bin:$PATH")
-                return res3 == 0
-        return False
 
+    def guppy_setup(self):
+        with open(os.path.join(self.config_dir,"guppy_setup"), "w+") as gs:
+            print("export GUPPYDIR="+self.guppy_path, file=gs)
+            print("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}", file=gs)
+            print("export PATH=$GUPPYDIR/bin:$PATH", file=gs)
+        return True
+    
     def create_config_copy(self):
         """
         creates a copy of the config directory inside the output directory
@@ -109,6 +104,8 @@ class PipelineRunner:
                 yaml.dump(self.yaml_args, config_file)
             self.config_dir_copy = dst
             print(str(datetime.now())+":::"+"created copy of config dir in output dir")
+        else:
+            self.config_dir_copy = os.path.join(self.output_path,"config/")
 
 
     def print_init_values(self, out=sys.stdout):
@@ -320,6 +317,16 @@ class PipelineRunner:
         out = os.path.join(self.output_path, "log/snake")
         t=time.time()
         #dag_command = "snakemake --rulegraph --snakefile "+pipeline_path+" --directory "+out+" --cores "+str(self.cores)+" --config scripts_dir="+self.scripts_dir+" config_dir="+self.config_dir+" > gvfile.txt"
+        #debug
+        #print(pipeline_path)
+        #print(out)
+        #print(self.cores)
+        #print(self.scripts_dir)
+        #print(self.config_dir_copy)
+        #print(self.output_path)
+        #print(self.iterations)
+        #print(t)
+        #end of debug
         pipeline_run_command = "snakemake --snakefile "+pipeline_path+" --directory "+out+" --cores "+str(self.cores)+" --rerun-incomplete --config scripts_dir="+self.scripts_dir+" config_dir="+self.config_dir_copy+" >> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".out"+" 2>> "+self.output_path+"log/pipeline_run"+str(self.iterations)+"_"+str(t)+".err"
         print(str(datetime.now())+":::"+"starting pipeline, command: "+pipeline_run_command)
         #os.system(dag_command)
