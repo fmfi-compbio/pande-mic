@@ -18,22 +18,25 @@ rule basecalling:
         dpb_log = config["output_dir"]+"{batch}/log/basecalling/{batch}__deepnanoblitz.log",
         dpb_err = config["output_dir"]+"{batch}/log/basecalling/{batch}__deepnanoblitz.err"
     output:
-        fastq = config["output_dir"]+"{batch}/basecalled/{batch}.fastq"
+        fastq_dir = directory(config["output_dir"]+"{batch}/basecalled/"),
+        done_file = config["output_dir"]+"{batch}/basecalled/.done"
     shell:
         """
         START=$(date +%s.%N)
         {params.deepnanopath}deepnano2_caller.py \
-                   --output {output.fastq} \
+                   --output {output.fastq_dir} \
                    --output-format fastq \
                    --directory {input.fast5_dir} \
                    --beam-size {params.beam_size} \
                    --threads {threads} \
                    --network-type {params.network_type} > {log.dpb_log} 2> {log.dpb_err}
-        touch {params.counting_file}
-        {params.scripts_dir}bash/count_reads_and_bases.sh {output.fastq} >> {params.counting_file}
+        for f in {output.fastq_dir}/*.fastq ; do
+            echo $({params.scripts_dir}bash/count_reads_and_bases.sh $f),$(basename $f) >> {params.counting_file}
+        done
         END=$(date +%s.%N)
         DIFF=$(echo "$END - $START" | bc)
         echo {input.fast5_dir}, $DIFF >> {params.time_dir}
+        touch {params.batch_dir}basecalled/.done
         """
 
 #command='{params.deepnanopath}deepnano2_caller.py \

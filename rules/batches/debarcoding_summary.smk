@@ -1,6 +1,6 @@
 rule debarcoding_summary:
     input:
-        debarcoding_out = config["output_dir"]+"{batch}/debarcoded/{batch}",
+        debarcoding_out = config["output_dir"]+"{batch}/debarcoded/",
     log: 
         concat_log = config["output_dir"]+"{batch}/log/concat_barcodes/concat.log",
         concat_err = config["output_dir"]+"{batch}/log/concat_barcodes/concat.err",

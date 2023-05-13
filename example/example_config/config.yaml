@@ -10,7 +10,7 @@ scripts_dir: /<path to the cloned dir>/pande-mic/ #should end with (/pande-mic/)
 output_dir: /<anywhere>/
 
 # # of barcodes
-barcodes: 96
+barcodes: 3
 
 # minimal number of new batches needed to run the pipeline
 min_batches: 1
@@ -39,13 +39,6 @@ deepnanoblitz_path: /<where is deepnano blitz>/scripts/
 blitz_beam_size: 5
 blitz_threads: 1
 blitz_network_type: 48
-
-#debarcoding
-guppy_path: /<path_to_guppy_dir>
-#guppy_arrangements_files: barcode_arrs_nb96.cfg
-guppy_config: configuration.cfg
-guppy_barcode_kits: EXP-NBD196
-guppy_threads: 1
 
 #alignment
 reference_genome: /<path to the cloned dir>/example/example_config/ref.fasta

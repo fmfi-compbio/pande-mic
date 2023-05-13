@@ -2,41 +2,32 @@ rule debarcoding:
     wildcard_constraints:
         batch="batch[0-9]*"
     input:
-        fastq = config["output_dir"]+"{batch}/basecalled/{batch}.fastq"
+        fastq_dir = config["output_dir"]+"{batch}/basecalled/",
+        basecall_done = config["output_dir"]+"{batch}/basecalled/.done"
     params:
         fastq_tmp_dir = config["output_dir"]+"{batch}/tmp{batch}/",
         fastq_tmp = config["output_dir"]+"{batch}/tmp{batch}/{batch}.fastq",
-        out_dir = config["output_dir"]+"{batch}/debarcoded/{batch}",
+        out_dir = config["output_dir"]+"{batch}/debarcoded/",
         counting_file = config["output_dir"]+"{batch}/debarcoded/count.csv",
         time_dir = config["output_dir"]+"timers/debarcoded/{batch}_debarcoding.txt",
-        #guppy_setup_path = config["guppy_setup_path"],
         scripts_dir = config["scripts_dir"],
-        guppy_config = config["guppy_config"],
-        barcode_kits = config["guppy_barcode_kits"],
-        guppy_setup = config["config_dir"]+"guppy_setup"
-    threads: config["guppy_threads"]
+        num_barcodes = config["barcodes"]
+    threads: 1
     benchmark:
         config["output_dir"]+"timers/debarcoded_benchmark/{batch}_debarcoding.tsv"
     log:
         debarcoding_log = config["output_dir"]+"{batch}/log/debarcoding/{batch}__debarcoding.log",
         debarcoding_err = config["output_dir"]+"{batch}/log/debarcoding/{batch}__debarcoding.err"
     output:
-        out = directory(config["output_dir"]+"{batch}/debarcoded/{batch}")
+        out = directory(config["output_dir"]+"{batch}/debarcoded/")
     shell:
         """
         START=$(date +%s.%N)
-        mkdir {params.fastq_tmp_dir}
-        ln -s {input.fastq} {params.fastq_tmp}
-        source {params.guppy_setup}; guppy_barcoder --require_barcodes_both_ends \
-                -i {params.fastq_tmp_dir} -s {params.out_dir} --worker_threads {threads} \
-                --config "{params.guppy_config}" \
-                --barcode_kits "{params.barcode_kits}" > {log.debarcoding_log} 2> {log.debarcoding_err}
+        python3 {params.scripts_dir}python/fake_debarcoder.py -i {input.fastq_dir} -o {params.out_dir} -n {params.num_barcodes}
         for d in {params.out_dir}/*/ ; do
             echo $({params.scripts_dir}bash/count_reads_and_bases.sh $d$(ls $d)),$(basename $d) >> {params.counting_file}
         done
-        unlink {params.fastq_tmp}
-        rm -rf {params.fastq_tmp_dir}
         END=$(date +%s.%N)
         DIFF=$(echo "$END - $START" | bc)
-        echo {input.fastq}, $DIFF >> {params.time_dir}
+        echo {input.fastq_dir}, $DIFF >> {params.time_dir}
         """

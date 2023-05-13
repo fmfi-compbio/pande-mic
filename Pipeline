@@ -10,11 +10,9 @@ if config["batch_path"] == None:
 BATCHES = [filename for filename in os.listdir(config["batch_path"]) if filename[0]!="."] #vsetky batche vo foldri
 
 if config["barcodes"]>=10:
-    SAMPLES = ["barcode0"+str(i) for i in range(1,10)]+["barcode"+str(i) for i in range(10,config["barcodes"]+1)]+["unclassified"] #sample pre kazdy barkod
+    SAMPLES = ["run00"+str(i) for i in range(1,10)]+["run0"+str(i) for i in range(10,config["barcodes"]+1)] #sample pre kazdy barkod
 elif config["barcodes"]<10 and config["barcodes"]>0:
-    SAMPLES = ["barcode0"+str(i) for i in range(1,int(config["barcodes"]))]+["unclassified"]
-else:
-    SAMPLES = ["unclassified"]
+    SAMPLES = ["run00"+str(i) for i in range(1,int(config["barcodes"])+1)]
 
 batch_done_path = os.path.join(config["output_dir"],"batches_done")
 if not os.path.exists(batch_done_path): #weird bug sloution - directory (sometimes!) deleted if empty at the end of pipeline run

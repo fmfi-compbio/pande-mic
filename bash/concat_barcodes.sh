@@ -4,14 +4,11 @@
 if test $1 -gt 0
 then
 
-for i in $(eval echo {01..$1});
+for i in $(eval echo {001..$1});
 do
-        for f in $2/barcode$i/*; do cat $f >> $3/barcode$i.fastq; done
-        echo $(eval $4/bash/count_reads_and_bases.sh $3/barcode$i.fastq),barcode$i >> $3/summary.csv;
+        for f in $2/run$i/*; do cat $f >> $3/run$i.fastq; done
+        echo $(eval $4/bash/count_reads_and_bases.sh $3/run$i.fastq),run$i >> $3/summary.csv;
 done;
 
 fi
 
-#cat $2/*/unclassified/* >> $3/unclassified.fastq
-for f in $2/unclassified/*; do cat $f >> $3/unclassified.fastq; done
-echo $(eval $4/bash/count_reads_and_bases.sh $3/unclassified.fastq),unclassified >> $3/summary.csv

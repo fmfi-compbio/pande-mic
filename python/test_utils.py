@@ -26,7 +26,7 @@ class Test:
         multiplier = ""
         for key in times_dict:
             if key == "debarcoded":
-                multiplier = "x"+str(self.pipelinerunner.guppy_threads)
+                multiplier = "x"+str(1)
             elif key == "basecalled":
                 multiplier = "x"+str(self.pipelinerunner.blitz_threads)
             elif "benchmark" in key:

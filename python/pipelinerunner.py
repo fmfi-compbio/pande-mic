@@ -41,8 +41,6 @@ class PipelineRunner:
             self.cores = yaml_args["cores"]
             self.variant_calling_threshold = yaml_args["variant_calling_threshold"]
             self.blitz_threads = yaml_args["blitz_threads"]
-            self.guppy_threads = yaml_args["guppy_threads"]
-            self.guppy_path = yaml_args["guppy_path"]
             self.config_dir_copy = None
             self.yaml_args = yaml_args
             self.test = Test(self)
@@ -69,26 +67,20 @@ class PipelineRunner:
                 os.mkdir(self.batch_folder)
                 print(str(datetime.now())+":::"+"created batch folder "+self.batch_folder)
 
+            self.dir_to_barcode = {}
+            self.dirs = os.listdir(self.input_path)
+            for i in range(len(self.dirs)):
+                if i<9:
+                    self.dir_to_barcode[self.dirs[i]]="run00"+str(i+1)
+                else:
+                    self.dir_to_barcode[self.dirs[i]]="run0"+str(i+1)                
+
             self.print_init_values()
             self.create_dirs()
-            
-            if not self.guppy_setup():
-                print("cannot create guppy setup, interrupting")
-                self.interrupt_cleanup()
-                try:
-                    sys.exit(0)
-                except SystemExit:
-                    os._exit(0)
 
         except KeyboardInterrupt:
             self.stop()
 
-    def guppy_setup(self):
-        with open(os.path.join(self.config_dir,"guppy_setup"), "w+") as gs:
-            print("export GUPPYDIR="+self.guppy_path, file=gs)
-            print("export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}", file=gs)
-            print("export PATH=$GUPPYDIR/bin:$PATH", file=gs)
-        return True
     
     def create_config_copy(self):
         """
@@ -194,7 +186,7 @@ class PipelineRunner:
                     self.batches+=1
                     l = line.split(",") # batch no., file1, file2, ..
                     for i in range(1, len(l)):
-                        self.fast5_batched.append(l[i].strip())
+                        self.fast5_batched.append(l[i].strip()[6:])
             #print(self.batches, self.batch_max)
             self.iterations = math.ceil(self.batches/self.batch_max) #approx. iterations
             print("loaded data form previous run, "+str(len(self.fast5_batched))+" processed files found ("+str(self.batches)+" batches, "+str(self.iterations)+" iterations)")
@@ -206,8 +198,10 @@ class PipelineRunner:
         """
         create a list of unprocessed files form the input directory (using os.listdir)
         """
-        fast5s = [filename for filename in os.listdir(self.input_path) if os.path.splitext(filename)[1]==".fast5"]
-        unprocessed = [fast5 for fast5 in fast5s if fast5 not in self.fast5_batched]
+        unprocessed = []
+        for indir in self.dirs:
+            fast5s = [filename for filename in os.listdir(os.path.join(self.input_path, indir)) if os.path.splitext(filename)[1]==".fast5"]
+            unprocessed += [[fast5, indir] for fast5 in fast5s if fast5 not in self.fast5_batched]
         return unprocessed
     
     def create_batches(self):
@@ -259,12 +253,13 @@ class PipelineRunner:
                     os.mkdir(batch_dir)
                     self.not_summarized.append(self.batches)
                     for j in range(self.batch_size):
-                        link_from = os.path.join(self.input_path, unprocessed[i])
-                        link_to = os.path.join(batch_dir, unprocessed[i])
+                        indir = unprocessed[i][1]
+                        link_from = os.path.join(self.input_path, indir+"/"+unprocessed[i][0])
+                        link_to = os.path.join(batch_dir, self.dir_to_barcode[indir]+unprocessed[i][0]) #add directory prefix to linked file
                         if not os.path.exists(link_to):
                             os.symlink(link_from, link_to)
-                        self.fast5_batched.append(unprocessed[i])
-                        line += ","+unprocessed[i]
+                        self.fast5_batched.append(unprocessed[i][0])
+                        line += ","+self.dir_to_barcode[unprocessed[i][1]]+unprocessed[i][0]
                         i+=1
                     self.batch_strings[self.batches] = line
                 else: # the batch already exists - was created in the prevois pipeline run
@@ -273,7 +268,7 @@ class PipelineRunner:
                     files = os.listdir(batch_dir)
                     for file in files:
                         line+=","+file
-                        self.fast5_batched.append(file)
+                        self.fast5_batched.append(file[6:])
                     self.batch_strings[self.batches] = line
                 self.batches += 1
                 counter += 1
@@ -285,12 +280,12 @@ class PipelineRunner:
                 os.mkdir(batch_dir)
                 self.not_summarized.append(self.batches)
                 for i in range(unprocessed_files):
-                    link_from = os.path.join(self.input_path, unprocessed[i])
-                    link_to = os.path.join(batch_dir, unprocessed[i])
+                    link_from = os.path.join(self.input_path, unprocessed[i][1]+"/"+unprocessed[i][0])
+                    link_to = os.path.join(batch_dir, self.dir_to_barcode[unprocessed[i][1]]+unprocessed[i][0])
                     if not os.path.exists(link_to):
                         os.symlink(link_from, link_to)
-                    self.fast5_batched.append(unprocessed[i])
-                    line += ","+unprocessed[i]
+                    self.fast5_batched.append(unprocessed[i][0])
+                    line += ","+self.dir_to_barcode[unprocessed[i][1]]+unprocessed[i][0]
                 self.batch_strings[self.batches] = line
             else:
                 print("batch "+str(self.batches)+" exists")
@@ -298,7 +293,7 @@ class PipelineRunner:
                 files = os.listdir(batch_dir)
                 for file in files:
                     line+=","+file
-                    self.fast5_batched.append(file)
+                    self.fast5_batched.append(file[6:])
                 self.batch_strings[self.batches] = line
             self.batches += 1
             counter += 1
