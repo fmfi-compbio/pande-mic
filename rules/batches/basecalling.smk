@@ -29,7 +29,8 @@ rule basecalling:
                    --beam-size {params.beam_size} \
                    --threads {threads} \
                    --network-type {params.network_type} > {log.dpb_log} 2> {log.dpb_err}
-        {params.scripts_dir}/bash/count_reads_and_bases.sh {output.fastq} >> {params.counting_file}
+        touch {params.counting_file}
+        {params.scripts_dir}bash/count_reads_and_bases.sh {output.fastq} >> {params.counting_file}
         END=$(date +%s.%N)
         DIFF=$(echo "$END - $START" | bc)
         echo {input.fast5_dir}, $DIFF >> {params.time_dir}

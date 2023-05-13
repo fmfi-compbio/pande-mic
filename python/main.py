@@ -65,9 +65,11 @@ def load_config(config_dir):
     
     
 def install_blitz(): #TODO
+    print("sorry, this feature is not yet implemented, plese install manually :(")
     return "/somewhere/"
 
 def install_guppy(): #TODO
+    print("sorry, this feature is not yet implemented, plese install manually :(")
     return "/somewhere/"
 
 
@@ -111,23 +113,23 @@ def check_config(yaml_args):
                 deepnanoblitz_path_input = input("sorry, the path is not valid, please try again:")
         missing_args["deepnanoblitz_path"] = deepnanoblitz_path_input
             
-    ###### guppy debarcoder ##### (setup included in pipelinerunner script, but has to be installed)
+    ###### guppy debarcoder ##### 
     if "guppy_path" in yaml_args:
         if not os.path.exists(yaml_args["guppy_path"]):
-            guppy_setup = input("guppy path "+yaml_args["guppy_path"]+" is not valid. Please enter the path to guppy (tested with v4.4.1) (something like /<where is guppy>/ont-guppy-cpu) or type 'install' to install it: \n")
-            while not os.path.exists(guppy_setup):
-                if guppy_setup == "install":
-                    guppy_setup = install_guppy()
-                guppy_setup =input("sorry, the path does not exist, please try again:")
-            missing_args["guppy_path"] = guppy_setup
+            guppy_path = input("guppy path "+yaml_args["guppy_path"]+" is not valid. Please enter the path to guppy (tested with v4.4.1) (something like /<where is guppy>/ont-guppy-cpu) or type 'install' to install it: \n")
+            while not os.path.exists(guppy_path):
+                if guppy_path == "install":
+                    guppy_path = install_guppy()
+                guppy_path =input("sorry, the path does not exist, please try again:")
+            missing_args["guppy_path"] = guppy_path
     else:
         print("guppy path not set")
-        guppy_setup = input("Please enter a path to guppy directory or type 'install' to install it:\n")
-        while not os.path.exists(guppy_setup):
-            if guppy_setup == "install":
-                guppy_setup = install_guppy()
-            guppy_setup =input("sorry, the path does not exist, please try again:")
-        missing_args["guppy_path"] = guppy_setup    
+        guppy_path = input("Please enter a path to guppy directory or type 'install' to install it:\n")
+        while not os.path.exists(guppy_path):
+            if guppy_path == "install":
+                guppy_path = install_guppy()
+            guppy_path =input("sorry, the path does not exist, please try again:")
+        missing_args["guppy_path"] = guppy_path    
     
     
     
@@ -235,7 +237,9 @@ def check_config(yaml_args):
             
     #### batch dir #####
     if "batch_path" in yaml_args:
-        if not os.path.exists(yaml_args["batch_path"]) and not os.path.exists(os.path.abspath(os.path.join(yaml_args["batch_path"], os.pardir))):
+        if yaml_args["batch_path"] == None: #path is none
+            missing_args["batch_path"] = None
+        elif not os.path.exists(yaml_args["batch_path"]) and not os.path.exists(os.path.abspath(os.path.join(yaml_args["batch_path"], os.pardir))): #path does not exist
             missing_args["batch_path"] = None
     else:
         missing_args["batch_path"] = None # create inside output dir        

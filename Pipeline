@@ -4,6 +4,9 @@ import time
 
 configfile: config["config_dir"]+"config.yaml"
 
+if config["batch_path"] == None:
+    config["batch_path"] = os.path.join(config["output_dir"],"batch/")
+
 BATCHES = [filename for filename in os.listdir(config["batch_path"]) if filename[0]!="."] #vsetky batche vo foldri
 
 if config["barcodes"]>=10:
