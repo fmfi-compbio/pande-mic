@@ -7,6 +7,7 @@ import yaml
 import math
 import shutil
 from test_utils import Test
+import random
 
 class PipelineRunner:
     """
@@ -199,9 +200,11 @@ class PipelineRunner:
         create a list of unprocessed files form the input directory (using os.listdir)
         """
         unprocessed = []
+        #random.shuffle(self.dirs) #to avoid taking .fast5s only form one directory if processing is slower than sequencing
         for indir in self.dirs:
             fast5s = [filename for filename in os.listdir(os.path.join(self.input_path, indir)) if os.path.splitext(filename)[1]==".fast5"]
             unprocessed += [[fast5, indir] for fast5 in fast5s if fast5 not in self.fast5_batched]
+            random.shuffle(unprocessed) #to avoid taking .fast5s only form one directory if processing is slower than sequencing
         return unprocessed
     
     def create_batches(self):
