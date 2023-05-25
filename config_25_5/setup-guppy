@@ -1,0 +1,8 @@
+
+export GUPPYDIR=/<where_is_guppy>/ont-guppy-cpu
+
+export LD_LIBRARY_PATH=$GUPPYDIR/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} 
+
+#export LD_LIBRARY_PATH=$GUPPYDIR/lib:$LD_LIBRARY_PATH
+
+export PATH=$GUPPYDIR/bin:$PATH

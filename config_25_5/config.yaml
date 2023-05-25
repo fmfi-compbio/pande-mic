@@ -1,0 +1,56 @@
+##############################
+# general pipeline settings
+##############################
+
+
+#path to scripts directory (pipeline root dir)
+scripts_dir: /scratch2/simulated-wastewater/monitoring/pande-mic/ #should end with (/pande-mic/)
+
+#where to store pipeline output
+output_dir: /scratch2/simulated-wastewater/monitoring/out/
+
+# # of barcodes
+barcodes: 16
+
+# minimal number of new batches needed to run the pipeline
+min_batches: 1
+# maximal number of batches to be processed at one time
+max_batches: 5
+# number of files in a batch
+batch_size: 10
+
+#maximal number of cores provided for the snakemake pipeline, NOTE: recomm.: max_batches =< cores
+cores: 5
+
+clear_annotated: False
+
+##########################################
+# settings for rules and specific scripts
+##########################################
+
+#basecalling
+input_path: /scratch2/simulated-wastewater/upload_renamed/
+
+#where to store temporary directories with linked files (batches to be processed)
+batch_path: /<output_dir>/batches
+
+#deepnano blitz params
+deepnanoblitz_path: /scratch2/simulated-wastewater/monitoring/deepnano-blitz/scripts/
+blitz_beam_size: 5
+blitz_threads: 1
+blitz_network_type: 48
+
+#alignment
+reference_genome: /scratch2/simulated-wastewater/monitoring/pande-mic/config_25_5/ref.fasta
+
+#base counting script
+alignment_low_cutoff: 50 
+
+#find SNPs
+coverage_threshold: 50
+coverage_fraction: 0.5
+
+#variant calling
+mut_file: /scratch2/simulated-wastewater/monitoring/pande-mic/config_25_5/mut_tree.txt
+variant_calling_threshold: 50
+

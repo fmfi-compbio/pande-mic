@@ -69,12 +69,16 @@ class PipelineRunner:
                 print(str(datetime.now())+":::"+"created batch folder "+self.batch_folder)
 
             self.dir_to_barcode = {}
-            self.dirs = os.listdir(self.input_path)
+            self.dirs = sorted(os.listdir(self.input_path))
             for i in range(len(self.dirs)):
                 if i<9:
                     self.dir_to_barcode[self.dirs[i]]="run00"+str(i+1)
                 else:
                     self.dir_to_barcode[self.dirs[i]]="run0"+str(i+1)                
+
+            print("barcode mapping:")
+            for d in self.dir_to_barcode:
+                print("directory "+d+" is barcode "+self.dir_to_barcode[d])
 
             self.print_init_values()
             self.create_dirs()
